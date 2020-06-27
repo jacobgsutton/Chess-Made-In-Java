@@ -4,15 +4,10 @@
 //It lays out the game display depending on setting passed from the MainController, it also sets JOptionPane internal attributes through UIManager
 package com.chess.UI;
 
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
+import java.util.Arrays;
 
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
 
 import com.chess.base.ChessBoard;
@@ -22,6 +17,7 @@ import com.chess.base.StatStorage;
 public class GameDisplayComponent extends JLayeredPane {
 
 	private JPanel mainPanel;
+	private JTextPane fullscreenToggleInfo;
 	private int leftMarginOnDeveloperPane = 0;
 	private int width;
 	private int height;
@@ -33,11 +29,21 @@ public class GameDisplayComponent extends JLayeredPane {
 		StatStorage.reset();
 		this.width = width;
 		this.height = height;
-		
+
+		fullscreenToggleInfo = new JTextPane();
+
 		mainPanel = new JPanel();
 		mainPanel.setBackground(Color.BLACK);
 		mainPanel.setBounds(0, 0, this.width, this.height);
 		mainPanel.setLayout(new GridBagLayout());
+
+		fullscreenToggleInfo.setBounds(width-175, height-22, 175, 20);
+		fullscreenToggleInfo.setText("alt + enter to toggle fullscreen.");
+		fullscreenToggleInfo.setOpaque(false);
+		fullscreenToggleInfo.setForeground(new Color(0, 230, 0));
+		fullscreenToggleInfo.setFont(new Font("Sans-serif", Font.PLAIN, 12));
+		fullscreenToggleInfo.setEditable(false);
+		fullscreenToggleInfo.setFocusable(false);
 		
 		UIManager.put("OptionPane.background",new ColorUIResource(0,0,0));
 		UIManager.put("OptionPane.messageForeground", Color.GREEN);
@@ -71,7 +77,8 @@ public class GameDisplayComponent extends JLayeredPane {
 			mainPanel.add(new DeveloperModePane(), new GridBagConstraints(0, 0, 0, 0, 0.0, 1.0, // DeveloperMode Pane
 					GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(0, leftMarginOnDeveloperPane, 0, 0), 0, 0));
 		}
-		
+
 		add(mainPanel);
+		add(fullscreenToggleInfo, 0);
 	}
 }

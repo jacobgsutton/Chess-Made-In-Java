@@ -26,7 +26,7 @@ public class StatStorage {
 									"updateDangerBoard() Inner Iterations", "getPieceLocation() Invocations", 
 									"movedBlocked() Inner Interations", "checkMate() Inner Interations", "convertToIntXOrY() Invocations",
 									"Developer Pane Word Count", "inCheckOrDanger() Invocations", "updateGraphicalBoard() Inner Interations", "Total Game Time", 
-									"Lights Total Turn Time", "Darks Total Turn Time", "Lights Turn Time Average", "Dark Turn Time Average"};
+									"Light's Total Turn Time", "Dark's Total Turn Time", "Light's Turn Time Average", "Dark's Turn Time Average"};
 	
 	//Fills storage with 0s 
 	private static void fillStorageWithZeros(){

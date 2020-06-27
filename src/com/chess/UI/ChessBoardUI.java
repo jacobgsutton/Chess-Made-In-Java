@@ -292,26 +292,6 @@ public class ChessBoardUI extends JLayeredPane {
 	}
 	
 	public void afterTurn() { //This is called after a released event has resulted in a piece being moved to new location and thus a turn has been taken
-		String team = "Dark";
-		if(gameInstance.isLightsTurn()) {
-			team = "Light";
-			StatStorage.increment(0);
-		}
-		else
-			StatStorage.increment(1);
-		if(gameInstance.afterTurnUpdate() == 0) {
-			System.out.println("GAME OVER");   
-			DeveloperModePane.printText("GAME OVER");
-			StatStorage.updateCaculations();
-			//Game Over simple JOptionPane, shows stats and gives option to play again or quit
-			int input = JOptionPane.showConfirmDialog(this.getParent(), "Checkmate! " + team + " Team Wins! Do you want to play again?\nSTATS::\n" + StatStorage.staticToString(), "GAME OVER", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, new CustomImage("/resources/GameOverChessArt.jpg", 420,379));
-			if(input == JOptionPane.YES_OPTION) {
-				((MainFrame)SwingUtilities.getRoot(this)).dispose();
-				new MainControllerUI();
-			}
-			else if(input == JOptionPane.NO_OPTION)
-				System.exit(0);
-		}
 		//Update both graphical instances
 		updateGraphicalBoard(this);
 		if(otherView != null)
@@ -326,6 +306,32 @@ public class ChessBoardUI extends JLayeredPane {
 		DeveloperModePane.printText(gameInstance.toStringDangerBoard());
 		System.out.println(gameInstance.printSpotDangerList());
 		DeveloperModePane.printText(gameInstance.printSpotDangerList());
+		
+		//Calls logical afterTurnUpdate on gameInstance and displays GAME OVER Prompt if necessary
+		String team = "Dark";
+		if(gameInstance.isLightsTurn()) {
+			team = "Light";
+			StatStorage.increment(0);
+		}
+		else
+			StatStorage.increment(1);
+		String gameOverMsg = "Checkmate! " + team + " Team Wins!";
+		switch(gameInstance.afterTurnUpdate()) {
+			case 0: break;
+			case 2: gameOverMsg = "Stalemate! The Game Is A Draw!";
+			default:
+			System.out.println("GAME OVER");
+			DeveloperModePane.printText("GAME OVER");
+			StatStorage.updateCaculations();
+			//Game Over simple JOptionPane, shows stats and gives option to play again or quit
+			int input = JOptionPane.showConfirmDialog(this.getParent(), gameOverMsg + " Do you want to play again?\nSTATS::\n" + StatStorage.staticToString(), "GAME OVER", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, new CustomImage("/resources/GameOverChessArt.jpg", 420,379));
+			if(input == JOptionPane.YES_OPTION) {
+				((MainFrame)SwingUtilities.getRoot(this)).dispose();
+				new MainControllerUI();
+			}
+			else if(input == JOptionPane.NO_OPTION)
+				System.exit(0);
+		}
 	}
 	
 	public ChessBoardUI getOtherView() { //returns the other view

@@ -247,9 +247,7 @@ public class ChessBoard {
 		else
 			darkKingInCheck = false;
 		StatStorage.startTurnClock();
-		if (checkMate())
-			return 0;
-		return 1;
+		return checkmate();
 	} 
 	
 	// Converts an array of two ints (x,y)
@@ -548,32 +546,33 @@ public class ChessBoard {
 		}
 	}
 
-	public boolean checkMate() //Checks to see if one of the the kings are in check mate, similar algorithm to updateDangerBoard()
-	{
+	//Checks to see if one of the the kings are in checkmate or stalemate, similar algorithm to updateDangerBoard(). (0 = no checkmate or stalemate, 1 = checkmate, 2 = stalemate)
+	public int checkmate() {
 		int exclude = 0;
 		String xy = "";
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
-				if (board[i][j] != null && ((darkKingInCheck && board[i][j].getColor().contains("dark")) 
-						|| (lightKingInCheck && board[i][j].getColor().contains("light")))) {
+				if (board[i][j] != null && ((!lightsTurn && board[i][j].getColor().contains("dark"))
+						|| (lightsTurn && board[i][j].getColor().contains("light")))) {
 					if(board[i][j].getName().contains("king"))
 						exclude = 2;
-					else 
+					else
 						exclude = 0;
 					for (int set = 0; set < board[i][j].getMovements().length - exclude; set++) {
 						StatStorage.increment(8);
 						if (!moveBlocked(board[i][j].getName(),
 								xy = convertToGoToXY(board[i][j].getName(), board[i][j].getMovements()[set]), true)
-								&& specialCaseChecker(board[i][j].getName(), xy, board[i][j].getMovements()[set], false) && !kingStillInCheck(board[i][j].getName(), xy)) {
-							return false;
+								&& specialCaseChecker(board[i][j].getName(), xy, board[i][j].getMovements()[set], false) &&
+								!kingStillInCheck(board[i][j].getName(), xy)) {
+							return 0;
 						}
 					}
 				}
 			}
 		}
 		if(!darkKingInCheck && !lightKingInCheck)
-			return false;
-		return true;
+			return 2;
+		return 1;
 	}
 	
 	private void updatePawnReadyForPromotionBooleans() { //Looks to see if a pawn is in position for promotion and updates respective attributes

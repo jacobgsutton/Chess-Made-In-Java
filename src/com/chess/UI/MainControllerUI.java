@@ -13,6 +13,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.StandardSocketOptions;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -83,7 +84,7 @@ class MainFrame extends JFrame {
 				setContentPane(gdc);
 				setVisible(true);
 				
-				//Listener for alt + enter full sreen toggle
+				//Listener for alt + enter full screen toggle
 				addKeyListener(new KeyAdapter() {
 					//Set Interface which is implemented by HashSet which contains Integer wrapper objects
 					private final Set<Integer> pressed = new HashSet<Integer>();
