@@ -45,6 +45,12 @@ public class ChessBoard {
 	private boolean darkPawnAtLastRank;
 	//Stores name of king based on perspective (used for check mate and still in check methods)
 	private String lightKingName = "king_E1_1", darkKingName = "king_E8_1";
+	//Holds boolean for if the current move is an En Passant
+	private boolean enPassant;
+	//Holds String coordinate of the capture during En Passant
+	private String enPassantXY= "";
+	//Holds int coordinate of the capture during En Passant
+	private int[] enPassantXYInt = {0,0};
 
 	public ChessBoard(String player1Color) { // Constructor of the ChessBoard and main game methods (player1Color is team color from "set perspective")	
 		StatStorage.startTurnClock();
@@ -56,6 +62,7 @@ public class ChessBoard {
 		darkKingInCheck = false;
 		lightPerspective = true;
 		lightsTurn = true;
+		enPassant = false;
 		if (player1Color.equals("dark"))
 			lightPerspective = false;
 		if (!lightPerspective) {
@@ -246,6 +253,8 @@ public class ChessBoard {
 		}
 		else
 			darkKingInCheck = false;
+		clearJustMoved2();
+		enPassant = false;
 		StatStorage.startTurnClock();
 		return checkmate();
 	} 
@@ -367,7 +376,10 @@ public class ChessBoard {
 
 	public void movePieceToLocation(String name, String goToXY, boolean actualMove) // searches for Piece based by "name" and moves it to location on board indicated by (x,y) cord
 	{
-
+		//This a special switch that is used to set the justMoved2 flag for pawns that are moving up two spaces on this turn
+		if(actualMove && name.contains("pawn") && (Math.abs(convertToIntXOrY(goToXY, 'y') - convertToIntXOrY(getPieceLocation(name), 'y')) > 1)) 
+			((Pawn)getPiece(name)).setJustMoved2(true); 
+	
 		board[convertToIntXOrY(goToXY, 'y')][convertToIntXOrY(goToXY, 'x')] = getAndRemovePieceAtLocation(
 				getPieceLocation(name));
 		//This a special switch that is used to "block" pawns 0,2 transformation once pawn has been moved one time
@@ -465,7 +477,7 @@ public class ChessBoard {
 		String[] leftSideSpots = {(convertToIntXOrY(location, 'x') - incDec) + "" + location.charAt(1),(convertToIntXOrY(location, 'x') - (incDec*2)) + "" + location.charAt(1),(convertToIntXOrY(location, 'x') - (incDec*3)) + "" + location.charAt(1)};
 
 		if (!skipPawnCheck && name.substring(0, 4).equals("pawn") && ((transformation[0] != 0
-				&& board[convertToIntXOrY(goToXY, 'y')][convertToIntXOrY(goToXY, 'x')] == null) 
+				&& board[convertToIntXOrY(goToXY, 'y')][convertToIntXOrY(goToXY, 'x')] == null && !enPassant(name, goToXY)) 
 					|| (transformation[1] == 2 && piece.getHasMoved()) || (transformation[0] == 0 && isCapture(name, goToXY))))
 			return false;
 		
@@ -524,8 +536,8 @@ public class ChessBoard {
 		boolean isCapture = isCapture(name, goToXY);
 		String capturedName = "";
 		if(isCapture) {
-			capturedName = board[convertToIntXOrY(goToXY, 'y')][convertToIntXOrY(goToXY, 'x')].getName();
-			addCapture(getAndRemovePieceAtLocation(goToXY));
+			capturedName = board[convertToIntXOrY((enPassant ? enPassantXY : goToXY), 'y')][convertToIntXOrY((enPassant ? enPassantXY : goToXY), 'x')].getName();
+			addCapture(getAndRemovePieceAtLocation((enPassant ? enPassantXY : goToXY)));
 		}
 		movePieceToLocation(name, goToXY, false);
 		updateDangerBoard();
@@ -533,14 +545,14 @@ public class ChessBoard {
 				|| (!lightsTurn && inCheckOrDanger(darkKingName, getPieceLocation(darkKingName)))) {
 			movePieceToLocation(name, pastLocation, false);
 			if(isCapture)
-				placePieceAtLocation(getCaptured(capturedName), goToXY);	
+				placePieceAtLocation(getCaptured(capturedName), (enPassant ? enPassantXY : goToXY));	
 			updateDangerBoard();
 			return true;
 		}
 		else {
 			movePieceToLocation(name, pastLocation, false);
 			if(isCapture)
-				placePieceAtLocation(getCaptured(capturedName), goToXY);	
+				placePieceAtLocation(getCaptured(capturedName), (enPassant ? enPassantXY : goToXY));	
 			updateDangerBoard();
 			return false;
 		}
@@ -597,8 +609,51 @@ public class ChessBoard {
 		}
 	}
 	
+	private void clearJustMoved2() { //Resets the Pawn attribute justMoved2 of the all Pawns of the player whos turn is about to start.
+		int i = 0;
+		Piece current = null;
+		if(lightsTurn) {
+			for(i = 0; i < lightPieces.size(); i++)
+				if((current = lightPieces.get(i)).name.contains("pawn"))
+					((Pawn)current).setJustMoved2(false);
+		}
+		else {
+			for(i = 0; i < darkPieces.size(); i++)
+				if((current = darkPieces.get(i)).name.contains("pawn"))
+					((Pawn)current).setJustMoved2(false);
+		}
+	}
+	
+	private boolean enPassant(String name, String goToXY) { //Checks for a special case for which the En Passant move can be played and returns true if all rules are met.
+		Piece piece = board[convertToIntXOrY(getPieceLocation(name), 'y')][convertToIntXOrY(goToXY, 'x')];
+		if(piece != null && piece.name.contains("pawn") && ((lightsTurn && piece.getColor().contains("dark")) || 
+				(!lightsTurn && piece.getColor().contains("light")))
+				&& ((Pawn)piece).getJustMoved2()) {
+			enPassant = true;
+			enPassantXY = convertToIntXOrY(goToXY, 'x') + "" + convertToIntXOrY(getPieceLocation(name), 'y');
+			enPassantXYInt[0] = convertToIntXOrY(goToXY, 'x');
+			enPassantXYInt[1] = convertToIntXOrY(getPieceLocation(name), 'y');
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean getEnPassant() {
+		return enPassant;
+	}
+	
+	public String getEnPassantXY() {
+		return enPassantXY;
+	}
+	
+	public int[] getEnPassantInt() {
+		return enPassantXYInt;
+	}
+	
 	public boolean isCapture(String name, String xy) // Takes in name of a Piece and then checks xy to see if the Piece there is on the opposite team, if so then method returns true
-	{
+	{	
+		if(enPassant(name, xy)) 
+			return true;
 		if(board[convertToIntXOrY(xy, 'y')][convertToIntXOrY(xy, 'x')] != null)
 			return !getPiece(name).getColor().equals(board[convertToIntXOrY(xy, 'y')][convertToIntXOrY(xy, 'x')].getColor());
 		return false;

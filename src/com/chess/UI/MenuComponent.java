@@ -163,7 +163,7 @@ public class MenuComponent extends JLayeredPane implements ActionListener {
 		menuImageLabel.setOpaque(false);
 
 		gameInfoPane.setBounds(768, 0, 260, 20);
-		gameInfoPane.setText("Beta 1.0. Developed by Jake Sutton.");
+		gameInfoPane.setText("Beta 1.1 Developed by Jake Sutton.");
 		gameInfoPane.setOpaque(false);
 		gameInfoPane.setForeground(new Color(0, 230, 0));
 		gameInfoPane.setFont(new Font("Sans-serif", Font.PLAIN, 12));

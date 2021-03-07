@@ -5,7 +5,6 @@
 package com.chess.UI;
 
 import java.awt.*;
-import java.util.Arrays;
 
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;

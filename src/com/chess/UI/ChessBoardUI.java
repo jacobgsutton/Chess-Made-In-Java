@@ -226,7 +226,17 @@ public class ChessBoardUI extends JLayeredPane {
 				squareID = ((BoardSquareUI)boardFoundation.getComponentAt(x + 24, y + 27)).getID();
 				if(gameInstance.legalMove(name, squareID)) {
 					if(gameInstance.isCapture(name, squareID)) {
-						gameInstance.addCapture(gameInstance.getAndRemovePieceAtLocation(squareID));
+						if(gameInstance.getEnPassant()) {
+							x = gameInstance.getEnPassantInt()[0] * 100;
+							y = gameInstance.getEnPassantInt()[1] * 100;
+							if(darkPerspective) {
+								x = 700 - x;
+								y = 700 - y;
+							}
+							gameInstance.addCapture(gameInstance.getAndRemovePieceAtLocation(gameInstance.getEnPassantXY()));
+						}
+						else 
+							gameInstance.addCapture(gameInstance.getAndRemovePieceAtLocation(squareID));
 						pieceUITempStorage.get(((PieceUI)((JPanel)boardFoundation.getComponentAt(x + 24, y + 27)).getComponent(0)).getID()).add(((PieceUI)((JPanel)boardFoundation.getComponentAt(x + 24, y + 27)).getComponent(0)));
 						((JPanel)boardFoundation.getComponentAt(x + 24, y + 27)).removeAll();
 					}
@@ -257,10 +267,10 @@ public class ChessBoardUI extends JLayeredPane {
 					else
 						afterTurn();
 				}
-				else
+				else if(startingSquare != null)
 					startingSquare.add(((JPanel)evt.getSource()));
 			}
-			else {
+			else if(startingSquare != null) {
 				startingSquare.add(((JPanel)evt.getSource()));
 			}
 			currentHeldSquare = null;
